@@ -16,7 +16,7 @@ jobs:
         id: build-image
         uses: redhat-actions/buildah-build@v2
         with:
-          image: ${{ env.IMAGE_NAME }}
+          image: opentofu
           tags: latest ${{ github.sha }}
           containerfiles: |
             ./Containerfile
