@@ -19,3 +19,7 @@ podman build -t <container_host>.io/<repo>/example_flask_app:latest .
 ```shell
 podman run -it -p 5000:5000 --network host -v $(pwd)/database.db:/mnt/database.db:Z -e 'SQL_DB_ADDR=/mnt/database.db' quay.io/hstefans/example_flask_app:latest
 ```
+
+A pre-built container image can be fetched as follows `podman pull quay.io/hstefans/example_flask_app:latest`
+
+- use a digest if you feel safer doing that

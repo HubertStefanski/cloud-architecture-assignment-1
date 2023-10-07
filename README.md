@@ -23,6 +23,10 @@ curl -L https://github.com/opentofu/opentofu/releases/download/v1.6.0-alpha2/tof
 unzip opentofu.zip -d opentofu &&\
 mv opentofu/tofu /usr/local/bin/tofu &&\
 rm opentofu opentofu.zip -rf
-
-
 ```
+
+Tofu requires the following environment variables to be set:
+ - `AWS_ACCESS_KEY_ID`
+ - `AWS_SECRET_ACCESS_KEY`
+ - `AWS_REGION`
+
