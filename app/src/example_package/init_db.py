@@ -1,7 +1,7 @@
 import sqlite3
 import os
 
-connection = sqlite3.connect('database.db')
+connection = sqlite3.connect(os.getenv("SQL_DB_ADDR"))
 
 with open(f'{os.getcwd()}/src/example_package/schema.sql') as f:
     connection.executescript(f.read())

@@ -1,16 +1,15 @@
 FROM registry.access.redhat.com/ubi9/ubi:9.2-755
 
+WORKDIR /
 COPY src src
 ENV DNF_OPTS="--setopt=install_weak_deps=False --setopt=tsflags=nodocs"
 RUN dnf install -y python3-devel \
  && dnf clean all -y
 RUN pip install flask
 
-EXPOSE 80
-EXPOSE 443
+#EXPOSE 80
+#EXPOSE 443
 EXPOSE 5000
 
-
 ENV FLASK_APP=src/example_package/entrypoint.py
-## PLACEHOLDER UNTIL FINAL DB IS UP
-CMD ["python3","src/example_package/init_db.py" ,"&&", "flask", "run", "-p", "5000"]
+CMD ["flask", "run", "-p", "5000"]
