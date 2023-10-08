@@ -1,13 +1,12 @@
-FROM golang:1.21
+FROM registry.access.redhat.com/ubi9/ubi:9.2-755
 
 LABEL maintainer="@HubertStefanski"
 LABEL description="A convenience container, enabling working with opentofu locally"
 
-RUN git clone git@github.com:opentofu/opentofu.git && cd opentofu
-RUN go mod init && go mod vendor
+RUN curl -L https://github.com/opentofu/opentofu/releases/download/v1.6.0-alpha2/tofu_1.6.0-alpha2_linux_amd64.zip \
+    --output opentofu.zip &&\
+    unzip opentofu.zip -d opentofu &&\
+    mv opentofu/tofu /bin/tofu &&\
+    rm opentofu opentofu.zip -rf \
 
-RUN go build -o /bin/opentofu ./cmd/main.go
-
-FROM scratch
-COPY --from=0 /bin/opentofu /bin/opentofu
-ENTRYPOINT "/bin/opentofu"
+ENTRYPOINT "/bin/tofu"
