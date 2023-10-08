@@ -1,24 +1,41 @@
 import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
 import os
+import psycopg2
 from werkzeug.exceptions import abort
 
 app = Flask(__name__)
 
 
 def get_db_connection():
-    conn = sqlite3.connect(os.getenv('SQL_DB_ADDR'))
-    conn.row_factory = sqlite3.Row
-    return conn
+    db_host = os.getenv('DB_HOST')
+    db_port = os.getenv('DB_PORT')
+    db_name = os.getenv('DB_NAME')
+    db_user = os.getenv('DB_USER')
+    db_password = os.getenv('DB_PASSWORD')
 
-
-app.config['SECRET_KEY'] = 'xXx_secret_key_xXx'
+    try:
+        conn = psycopg2.connect(
+            host=db_host,
+            port=db_port,
+            database=db_name,
+            user=db_user,
+            password=db_password
+        )
+        return conn
+    except Exception as e:
+        print(f"Error connecting to PostgreSQL: {str(e)}")
+        return None
 
 
 @app.route('/')
 def index():
     conn = get_db_connection()
-    posts = conn.execute('SELECT * FROM posts').fetchall()
+
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM posts')
+    posts = cur.fetchall()
+
     conn.close()
     return render_template('index.html', posts=posts)
 
@@ -33,8 +50,9 @@ def create():
             flash('Title is required!')
         else:
             conn = get_db_connection()
-            conn.execute('INSERT INTO posts (title, content) VALUES (?, ?)',
-                         (title, content))
+            cur = conn.cursor()
+            cur.execute('INSERT INTO posts (title, content) VALUES (%s, %s)',
+                        (title, content))
             conn.commit()
             conn.close()
             return redirect(url_for('index'))

@@ -8,18 +8,45 @@ I am aware of some of the ugliness of the code here, however, this isn't a conce
 to serve as a simple web UI to demonstrate deployed infrastructure and relevant networking for a Cloud Architecture
 assignment.
 
-# Build and Run
+## Requirements
+### Postgres
 
-Set the `SQL_DB_ADDR` environment variable to a databse.db file location or the URL of the SQL database
-
-```shell
-podman build -t <container_host>.io/<repo>/example_flask_app:latest .  
-```
+The deployment expects a running postgres database, you can deploy it using the following commands
 
 ```shell
-podman run -it -p 5000:5000 --network host -v $(pwd)/database.db:/mnt/database.db:Z -e 'SQL_DB_ADDR=/mnt/database.db' quay.io/hstefans/example_flask_app:latest
+podman pull postgres &&\
+ podman run --name postgresql \
+ -e POSTGRES_DB=demo-db \
+ -e POSTGRES_USER=demo \
+ -e POSTGRES_PASSWORD=demo123 \
+ -p 5432:5432 \
+ -v /data:/var/lib/postgresql/data \
+ -d postgres:latest
 ```
 
-A pre-built container image can be fetched as follows `podman pull quay.io/hstefans/example_flask_app:latest`
+### DB Initialization
 
-- use a digest if you feel safer doing that
+Optionally, you can initialize the databse with some mock data using the following:
+
+```shell
+podman pull quay.io/hstefans/db_init:latest && \
+ podman run -e DB_NAME=demo-db \
+ -e DB_USER=demo \
+ -e DB_PASSWORD=demo123 \
+ -e DB_HOST=<POSTGRES_ADDRESS_HERE> \
+ -e DB_PORT=5432 quay.io/hstefans/db_init:latest
+```
+
+## Run
+
+### Flask App
+
+```shell
+podman run -it -p 5000:5000 \
+ --network host \
+ -e DB_NAME=demo-db \
+ -e DB_USER=demo \
+ -e DB_PASSWORD=demo123 \
+ -e DB_HOST=<POSTGRES ADDRESS HERE> \
+ -e DB_PORT=5432 quay.io/hstefans/example_flask_app:latest
+```

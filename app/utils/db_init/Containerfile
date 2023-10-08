@@ -1,0 +1,10 @@
+FROM registry.access.redhat.com/ubi9/ubi:9.2-755
+
+COPY db_init.py db_init.py
+COPY schema.sql schema.sql
+ENV DNF_OPTS="--setopt=install_weak_deps=False --setopt=tsflags=nodocs"
+RUN dnf install -y python3-devel \
+ && dnf clean all -y
+RUN pip install psycopg2-binary
+
+CMD ["python3", "db_init.py"]
