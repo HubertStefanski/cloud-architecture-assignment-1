@@ -1,32 +1,52 @@
-# cloud-architecture-assignment-1
+# Example Flask App
 
-This repository hosts the automation scripts and documentation for the SETU M.Sc. - Enterprise Software Systems, Cloud
-Architecture module.
+A simple Python Flask App inspired
+by https://www.digitalocean.com/community/tutorials/how-to-make-a-web-application-using-flask-in-python-3.
+To represent a "real-worldish" deployment of a user interface and a database back end.
 
-Deployed and managed through Infrastructure-as-code by [***OpenTofu!***](https://opentofu.org/docs/language/)
+I am aware of some of the ugliness of the code here, however, this isn't a concern as this application is only supposed
+to serve as a simple web UI to demonstrate deployed infrastructure and relevant networking for a Cloud Architecture
+assignment.
 
 ## Requirements
+### Postgres
 
-### OpenTofu
+The deployment expects a running postgres database, you can deploy it using the following commands
 
-Replace:
-`distro` - With your relevant distro ['linux','openbsd','darwin','freebsd','solaris','windows']
-'arch' - With your relevant architecture ['amd64','arm','arm64','386']
-
-*Note: you may need to run the following with `sudo`*
 ```shell
-export DISTRO=linux
-export ARCH=amd64
-
-curl -L https://github.com/opentofu/opentofu/releases/download/v1.6.0-alpha2/tofu_1.6.0-alpha2_"${DISTRO}"_"${ARCH}".zip \
---output opentofu.zip &&\ 
-unzip opentofu.zip -d opentofu &&\
-mv opentofu/tofu /usr/local/bin/tofu &&\
-rm opentofu opentofu.zip -rf
+podman pull postgres &&\
+ podman run --name postgresql \
+ -e POSTGRES_DB=demo-db \
+ -e POSTGRES_USER=demo \
+ -e POSTGRES_PASSWORD=demo123 \
+ -p 5432:5432 \
+ -v /data:/var/lib/postgresql/data \
+ -d postgres:latest
 ```
 
-Tofu requires the following environment variables to be set:
- - `AWS_ACCESS_KEY_ID`
- - `AWS_SECRET_ACCESS_KEY`
- - `AWS_REGION`
+### DB Initialization
 
+Optionally, you can initialize the databse with some mock data using the following:
+
+```shell
+podman pull quay.io/hstefans/db_init:latest && \
+ podman run -e DB_NAME=demo-db \
+ -e DB_USER=demo \
+ -e DB_PASSWORD=demo123 \
+ -e DB_HOST=<POSTGRES_ADDRESS_HERE> \
+ -e DB_PORT=5432 quay.io/hstefans/db_init:latest
+```
+
+## Run
+
+### Flask App
+
+```shell
+podman run -it -p 5000:5000 \
+ --network host \
+ -e DB_NAME=demo-db \
+ -e DB_USER=demo \
+ -e DB_PASSWORD=demo123 \
+ -e DB_HOST=<POSTGRES ADDRESS HERE> \
+ -e DB_PORT=5432 quay.io/hstefans/example_flask_app:latest
+```
