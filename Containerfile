@@ -1,13 +1,17 @@
-FROM golang:1.21
+FROM registry.access.redhat.com/ubi9/ubi:9.2-755
 
-LABEL maintainer="@HubertStefanski"
-LABEL description="A convenience container, enabling working with opentofu locally"
+WORKDIR /
+COPY src src
+COPY requirements.txt requirements.txt
+ENV DNF_OPTS="--setopt=install_weak_deps=False --setopt=tsflags=nodocs"
+RUN dnf install -y python3-devel \
+ && dnf clean all -y
+RUN pip install flask
+RUN pip install -r requirements.txt
 
-RUN git clone git@github.com:opentofu/opentofu.git && cd opentofu
-RUN go mod init && go mod vendor
+#EXPOSE 80
+#EXPOSE 443
+EXPOSE 5000
 
-RUN go build -o /bin/opentofu ./cmd/main.go
-
-FROM scratch
-COPY --from=0 /bin/opentofu /bin/opentofu
-ENTRYPOINT "/bin/opentofu"
+ENV FLASK_APP=src/example_package/entrypoint.py
+CMD ["flask", "run", "-p", "5000", "--host", "0.0.0.0"]
