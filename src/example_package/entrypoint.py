@@ -1,7 +1,10 @@
+import datetime
 import sqlite3
 from flask import Flask, render_template, request, url_for, flash, redirect
+from datetime import datetime
 import os
 import psycopg2
+import boto3
 from werkzeug.exceptions import abort
 
 app = Flask(__name__)
@@ -28,8 +31,36 @@ def get_db_connection():
         return None
 
 
+def cloudwatch_metric_push():
+    print("PUSH STATS SET, SENDING METRICS")
+    # os.putenv("export AWS_REGION=$(curl -s https://http://169.254.169.254/latest/meta-data/placement/region)")
+    # os.system("export INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)")
+
+    print(f"AWS REGION {os.getenv('AWS_REGION')}")
+    client = boto3.client("cloudwatch", region_name="us-east-1")
+
+    client.put_metric_data(
+        Namespace='Name of the Airflow DAG',
+        MetricData=[
+            {
+                'MetricName': 'number_of_downloaded_rows',
+                'Dimensions': [
+                    {
+                        'Name': 'Instance_ID',
+                        'Value': 'i-0d0f33b6be7271391'
+                    },
+                ],
+                'Value': 1,
+                'Unit': 'Count'
+            },
+        ]
+    )
+
+
 @app.route('/')
 def index():
+    if os.getenv("PUSH_STATS") == "true":
+        cloudwatch_metric_push()
     conn = get_db_connection()
 
     cur = conn.cursor()

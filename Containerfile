@@ -6,7 +6,7 @@ COPY requirements.txt requirements.txt
 ENV DNF_OPTS="--setopt=install_weak_deps=False --setopt=tsflags=nodocs"
 RUN dnf install -y python3-devel \
  && dnf clean all -y
-RUN pip install flask
+RUN pip install flask awscli boto3
 RUN pip install -r requirements.txt
 
 #EXPOSE 80
