@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euoxu pipefail
+set -eoxu pipefail
 INSTANCE_ID=$(ec2-metadata --instance-id | grep -oP 'instance-id: \K.*')
 
 docker_stats=$(docker stats --all --no-stream --format '{{ json . }}')
